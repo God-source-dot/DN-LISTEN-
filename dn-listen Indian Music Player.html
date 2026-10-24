@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dn-listen | All Indian Songs & Desi Music Player by Deepanshu Namdeo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Space Grotesk -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        dn: {
+                            bg: '#08070F',
+                            card: '#131122',
+                            border: '#252140',
+                            saffron: '#F59E0B',
+                            magenta: '#EC4899',
+                            cyan: '#06B6D4',
+                            indigo: '#6366F1'
+                        }
+                    },
+                    animation: {
+                        'spin-slow': 'spin 9s linear infinite',
+                        'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { opacity: 0.6, transform: 'scale(1)' },
+                            '50%': { opacity: 1, transform: 'scale(1.04)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #08070F;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #252140;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #F59E0B;
+        }
+        .glass-panel {
+            background: rgba(19, 17, 34, 0.78);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-player {
+            background: rgba(11, 10, 20, 0.92);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border-top: 1px solid rgba(245, 158, 11, 0.28);
+        }
+        .desi-neon-shadow {
+            box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.45), 0 0 12px -4px rgba(236, 72, 153, 0.4);
+        }
+        /* Equalizer Animation Bars */
+        .eq-bar {
+            width: 3px;
+            background: linear-gradient(to top, #F59E0B, #EC4899, #06B6D4);
+            border-radius: 2px;
+            animation: eqBounce 0.75s ease-in-out infinite alternate;
+        }
+        .eq-bar:nth-child(1) { animation-delay: 0.0s; height: 60%; }
+        .eq-bar:nth-child(2) { animation-delay: 0.2s; height: 100%; }
+        .eq-bar:nth-child(3) { animation-delay: 0.35s; height: 45%; }
+        .eq-bar:nth-child(4) { animation-delay: 0.15s; height: 85%; }
+        @keyframes eqBounce {
+            0% { height: 20%; }
+            100% { height: 100%; }
+        }
+        .paused-eq .eq-bar {
+            animation-play-state: paused;
+            height: 20% !important;
+        }
+        /* Custom Range Input */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 5px;
+            border-radius: 999px;
+            background: #252140;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: #F59E0B;
+            margin-top: -4px;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.9);
+            transition: transform 0.15s ease;
+        }
+        input[type="range"]:hover::-webkit-slider-thumb {
+            transform: scale(1.25);
+            background: #EC4899;
+        }
+        .vinyl-grooves {
+            background: repeating-radial-gradient(
+                #111 0, 
+                #111 4px, 
+                #1e1b2e 5px, 
+                #111 6px
+            );
+        }
+        .drag-over {
+            border-color: #F59E0B !important;
+            background: rgba(245, 158, 11, 0.12) !important;
+        }
+    </style>
+</head>
+<body id="drop-zone" class="bg-dn-bg text-slate-100 font-sans antialiased overflow-hidden select-none h-screen flex flex-col">
+
+    <!-- Ambient Indian Neon Background Glows -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div class="absolute -top-28 -left-28 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-pink-600/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-12 right-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full opacity-0 transition-all duration-300 glass-panel border-l-4 border-amber-400 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 max-w-xs">
+        <i id="toast-icon" class="fa-solid fa-music text-amber-400"></i>
+        <span id="toast-msg" class="text-xs sm:text-sm font-medium text-slate-100">Notification</span>
+    </div>
+
+    <!-- Main Layout Container -->
+    <div class="relative z-10 flex flex-1 overflow-hidden">
+
+        <!-- Left Sidebar Navigation -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 glass-panel border-r border-dn-border flex flex-col transition-transform duration-300 transform -translate-x-full lg:translate-x-0 lg:static lg:inset-auto">
+            <!-- Brand Header -->
+            <div class="p-5 flex items-center justify-between border-b border-dn-border/60">
+                <a href="#" class="flex items-center gap-3 group" onclick="switchNav('home')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-pink-500 to-indigo-600 flex items-center justify-center desi-neon-shadow group-hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-music text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-display font-bold text-xl tracking-tight bg-gradient-to-r from-amber-300 via-pink-300 to-cyan-300 bg-clip-text text-transparent">dn-listen</span>
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">DESI</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400 tracking-wider uppercase">By Deepanshu Namdeo</p>
+                    </div>
+                </a>
+                <button id="close-sidebar-btn" class="lg:hidden text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 px-3.5 py-4 space-y-1 overflow-y-auto">
+                <p class="px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Explore Indian Music</p>
+                
+                <button onclick="switchNav('home')" id="nav-home" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all bg-gradient-to-r from-amber-500/25 to-pink-500/15 text-white border border-amber-500/30">
+                    <i class="fa-solid fa-fire text-amber-400 w-5"></i>
+                    <span>All Indian Hits</span>
+                </button>
+
+                <button onclick="switchNav('online')" id="nav-online" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-all justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-globe text-cyan-400 w-5"></i>
+                        <span>Live Online Songs</span>
+                    </div>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">LIVE</span>
+                </button>
+
+                <button onclick="switchNav('favorites')" id="nav-favorites" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-all justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-heart text-pink-500 w-5"></i>
+                        <span>Liked Songs</span>
+                    </div>
+                    <span id="fav-count-badge" class="text-xs px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 font-semibold">4</span>
+                </button>
+
+                <!-- Upload Local Indian MP3s / Folder -->
+                <div class="pt-4 pb-2 space-y-2">
+                    <p class="px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Upload Your Songs</p>
+                    
+                    <label for="local-file-input" class="cursor-pointer w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-500/20 via-pink-500/20 to-indigo-500/20 hover:from-amber-500/30 hover:to-pink-500/30 text-amber-300 border border-amber-500/40 transition-all shadow-sm">
+                        <i class="fa-solid fa-cloud-arrow-up text-amber-400 w-4"></i>
+                        <span>Upload Indian MP3s</span>
+                    </label>
+                    <input id="local-file-input" type="file" accept="audio/*" multiple class="hidden">
+
+                    <label for="local-folder-input" class="cursor-pointer w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium bg-white/5 hover:bg-white/10 text-cyan-300 border border-white/10 transition-all">
+                        <i class="fa-solid fa-folder-plus text-cyan-400 w-4"></i>
+                        <span>Upload Music Folder</span>
+                    </label>
+                    <input id="local-folder-input" type="file" webkitdirectory directory multiple class="hidden">
+                </div>
+
+                <!-- Indian Genre Quick Mixes -->
+                <div class="pt-3 space-y-1">
+                    <p class="px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Desi Genres & Moods</p>
+                    <button onclick="filterByCategory('Bollywood Romance')" class="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition">
+                        <span class="w-2 h-2 rounded-full bg-pink-500"></span> Bollywood Romance
+                    </button>
+                    <button onclick="filterByCategory('Punjabi Beats')" class="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition">
+                        <span class="w-2 h-2 rounded-full bg-amber-400"></span> Punjabi Bhangra & Beats
+                    </button>
+                    <button onclick="filterByCategory('Desi Hip-Hop')" class="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400"></span> Desi Hip-Hop & Rap
+                    </button>
+                    <button onclick="filterByCategory('Sufi & Soulful')" class="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Sufi & Soulful
+                    </button>
+                    <button onclick="filterByCategory('South Indian Vibes')" class="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition">
+                        <span class="w-2 h-2 rounded-full bg-orange-500"></span> South Indian Mass & Melody
+                    </button>
+                    <button onclick="filterByCategory('Indian Lofi')" class="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition">
+                        <span class="w-2 h-2 rounded-full bg-purple-400"></span> Indian Lofi & Chill
+                    </button>
+                    <button onclick="filterByCategory('Classical Fusion')" class="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition">
+                        <span class="w-2 h-2 rounded-full bg-indigo-400"></span> Raga & Classical Fusion
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Creator Footer Card -->
+            <div class="p-3.5 m-3 rounded-2xl bg-gradient-to-br from-amber-900/30 via-dn-card to-pink-900/20 border border-amber-500/20">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 via-pink-500 to-indigo-500 flex items-center justify-center font-display font-bold text-xs text-white shadow">
+                        DN
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-white truncate">Deepanshu Namdeo</p>
+                        <p class="text-[10px] text-amber-400 truncate">Founder • dn-listen India</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Main Content Area -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-dn-bg/60">
+            
+            <!-- Top Header Bar -->
+            <header class="h-16 px-4 sm:px-8 border-b border-dn-border flex items-center justify-between gap-3 shrink-0">
+                <div class="flex items-center gap-3 flex-1 max-w-2xl">
+                    <button id="open-sidebar-btn" class="lg:hidden p-2 rounded-xl bg-dn-card border border-dn-border text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <!-- Instant Filter & Online Search Input -->
+                    <div class="relative flex-1 flex items-center gap-2">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input id="search-input" type="text" placeholder="Search Indian songs, Arijit Singh, Diljit, Rahman, Kesariya..." 
+                                class="w-full pl-9 pr-8 py-2 rounded-xl bg-dn-card border border-dn-border text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition">
+                            <button id="clear-search-btn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </button>
+                        </div>
+                        <button onclick="searchOnlineITunes()" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-pink-600 hover:from-amber-400 hover:to-pink-500 text-white font-semibold text-xs flex items-center gap-1.5 shadow-lg shrink-0 transition">
+                            <i class="fa-solid fa-cloud-bolt"></i>
+                            <span class="hidden sm:inline">Search Online</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-2.5">
+                    <label for="local-file-input" class="cursor-pointer hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-xs font-medium text-amber-300 transition">
+                        <i class="fa-solid fa-plus text-amber-400"></i>
+                        <span>Upload MP3s</span>
+                    </label>
+                    <button id="toggle-right-panel-btn" class="xl:hidden p-2 rounded-xl bg-pink-500/20 border border-pink-500/40 text-pink-300 hover:text-white transition" title="Now Playing Drawer">
+                        <i class="fa-solid fa-compact-disc animate-spin-slow"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Scrollable Content Area -->
+            <div class="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-6">
+
+                <!-- Hero Featured Banner -->
+                <section id="hero-banner" class="relative rounded-3xl overflow-hidden border border-amber-500/20 p-5 sm:p-7 bg-gradient-to-r from-[#28122B] via-[#1B1238] to-[#0D2238] shadow-2xl">
+                    <div class="absolute right-0 top-0 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div class="space-y-3 max-w-xl">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/30 text-[11px] font-semibold text-amber-300 uppercase tracking-wider">
+                                <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                                All-India Desi Music Hub • Deepanshu Namdeo
+                            </div>
+                            <h1 class="font-display text-2xl sm:text-4xl font-bold text-white leading-tight">
+                                Stream Non-Stop <span class="bg-gradient-to-r from-amber-400 via-pink-400 to-cyan-300 bg-clip-text text-transparent">Indian Hits & Ragas</span>
+                            </h1>
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                Enjoy built-in Indian Sargam & Tabla/Dhol synthesized tracks, stream real online Bollywood, Punjabi & South Indian previews live, or drag-and-drop your entire local Indian MP3 collection!
+                            </p>
+                            
+                            <!-- Quick Artist Live Stream Chips -->
+                            <div class="pt-1 flex flex-wrap items-center gap-1.5">
+                                <span class="text-[11px] text-slate-400 mr-1"><i class="fa-solid fa-bolt text-amber-400 mr-1"></i>Instant Online Stream:</span>
+                                <button onclick="fetchArtistSongs('Arijit Singh')" class="text-[11px] px-2.5 py-1 rounded-full bg-white/10 hover:bg-amber-500/30 text-amber-200 border border-white/10 transition">Arijit Singh</button>
+                                <button onclick="fetchArtistSongs('Diljit Dosanjh')" class="text-[11px] px-2.5 py-1 rounded-full bg-white/10 hover:bg-amber-500/30 text-amber-200 border border-white/10 transition">Diljit Dosanjh</button>
+                                <button onclick="fetchArtistSongs('A.R. Rahman')" class="text-[11px] px-2.5 py-1 rounded-full bg-white/10 hover:bg-amber-500/30 text-amber-200 border border-white/10 transition">A.R. Rahman</button>
+                                <button onclick="fetchArtistSongs('Shreya Ghoshal')" class="text-[11px] px-2.5 py-1 rounded-full bg-white/10 hover:bg-amber-500/30 text-amber-200 border border-white/10 transition">Shreya Ghoshal</button>
+                                <button onclick="fetchArtistSongs('Anirudh Ravichander')" class="text-[11px] px-2.5 py-1 rounded-full bg-white/10 hover:bg-amber-500/30 text-amber-200 border border-white/10 transition">Anirudh</button>
+                                <button onclick="fetchArtistSongs('Pritam Bollywood')" class="text-[11px] px-2.5 py-1 rounded-full bg-white/10 hover:bg-amber-500/30 text-amber-200 border border-white/10 transition">Pritam</button>
+                                <button onclick="fetchArtistSongs('AP Dhillon')" class="text-[11px] px-2.5 py-1 rounded-full bg-white/10 hover:bg-amber-500/30 text-amber-200 border border-white/10 transition">AP Dhillon</button>
+                            </div>
+
+                            <div class="pt-2 flex flex-wrap items-center gap-3">
+                                <button onclick="playFeatured()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-pink-500 to-indigo-600 hover:from-amber-400 hover:to-pink-500 text-white font-semibold text-xs sm:text-sm flex items-center gap-2.5 desi-neon-shadow transition transform active:scale-95">
+                                    <i class="fa-solid fa-play"></i>
+                                    <span>Play Kesariya Vibes</span>
+                                </button>
+                                <label for="local-file-input" class="cursor-pointer px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-100 font-medium text-xs sm:text-sm flex items-center gap-2 border border-white/15 transition">
+                                    <i class="fa-solid fa-cloud-arrow-up text-amber-300"></i>
+                                    <span>Upload All Local MP3s</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Live Visualizer Box -->
+                        <div class="w-full lg:w-72 glass-panel rounded-2xl p-4 border border-white/10 flex flex-col justify-between shrink-0">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[11px] font-medium text-slate-300 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-wave-square text-amber-400"></i> Desi Spectrum
+                                </span>
+                                <button onclick="cycleVisualizerMode()" id="viz-mode-btn" class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition">
+                                    Mode: Bars
+                                </button>
+                            </div>
+                            <div class="h-24 w-full bg-black/40 rounded-xl overflow-hidden relative flex items-center justify-center">
+                                <canvas id="visualizer-canvas" class="w-full h-full block"></canvas>
+                            </div>
+                            <div class="mt-2 flex items-center justify-between text-[11px] text-slate-400">
+                                <span id="viz-status-text" class="truncate max-w-[160px]">Ready to stream</span>
+                                <span class="font-mono text-amber-400" id="viz-bpm-tag">Raga Yaman</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Category Filter Pills & Section Header -->
+                <section class="space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <h2 id="section-heading" class="font-display text-lg sm:text-xl font-bold text-white">All Indian Hits</h2>
+                            <p id="section-subheading" class="text-xs text-slate-400">Pre-loaded Indian Sargam Synth Beats, Live Online Previews & Your Local MP3s</p>
+                        </div>
+
+                        <!-- Category Pills -->
+                        <div id="category-pills" class="flex items-center gap-2 overflow-x-auto pb-1">
+                            <button onclick="filterByCategory('All')" data-cat="All" class="cat-pill shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-500 to-pink-600 text-white shadow">All Indian Hits</button>
+                            <button onclick="filterByCategory('Online Stream')" data-cat="Online Stream" class="cat-pill shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-dn-card text-cyan-300 hover:text-white border border-cyan-500/30 transition">🌐 Online Indian Songs</button>
+                            <button onclick="filterByCategory('Bollywood Romance')" data-cat="Bollywood Romance" class="cat-pill shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-dn-card text-slate-400 hover:text-white border border-dn-border transition">Bollywood Romance</button>
+                            <button onclick="filterByCategory('Punjabi Beats')" data-cat="Punjabi Beats" class="cat-pill shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-dn-card text-slate-400 hover:text-white border border-dn-border transition">Punjabi Beats</button>
+                            <button onclick="filterByCategory('Desi Hip-Hop')" data-cat="Desi Hip-Hop" class="cat-pill shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-dn-card text-slate-400 hover:text-white border border-dn-border transition">Desi Hip-Hop</button>
+                            <button onclick="filterByCategory('Sufi & Soulful')" data-cat="Sufi & Soulful" class="cat-pill shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-dn-card text-slate-400 hover:text-white border border-dn-border transition">Sufi & Soulful</button>
+                            <button onclick="filterByCategory('South Indian Vibes')" data-cat="South Indian Vibes" class="cat-pill shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-dn-card text-slate-400 hover:text-white border border-dn-border transition">South Indian Vibes</button>
+                            <button onclick="filterByCategory('Indian Lofi')" data-cat="Indian Lofi" class="cat-pill shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-dn-card text-slate-400 hover:text-white border border-dn-border transition">Indian Lofi</button>
+                            <button onclick="filterByCategory('Classical Fusion')" data-cat="Classical Fusion" class="cat-pill shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-dn-card text-slate-400 hover:text-white border border-dn-border transition">Classical Fusion</button>
+                            <button onclick="filterByCategory('Uploads')" data-cat="Uploads" class="cat-pill shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-dn-card text-amber-300 hover:text-white border border-amber-500/30 transition">📁 My Uploaded MP3s</button>
+                        </div>
+                    </div>
+
+                    <!-- Track Cards Grid -->
+                    <div id="tracks-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <!-- Dynamically Populated -->
+                    </div>
+
+                    <!-- Complete Tracklist Queue Table -->
+                    <div class="pt-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-display text-sm font-semibold text-slate-300 uppercase tracking-wider">Complete Indian Song Queue</h3>
+                            <span id="track-count-label" class="text-xs text-amber-400 font-medium">16 songs</span>
+                        </div>
+                        <div class="glass-panel rounded-2xl overflow-hidden border border-dn-border">
+                            <div id="tracks-list" class="divide-y divide-dn-border/60">
+                                <!-- Dynamically Populated -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+
+        <!-- Right-Hand Now Playing / Vinyl & Lyrics Drawer -->
+        <aside id="right-panel" class="fixed inset-y-0 right-0 z-40 w-80 glass-panel border-l border-dn-border flex flex-col transition-transform duration-300 transform translate-x-full xl:translate-x-0 xl:static xl:inset-auto">
+            <div class="p-5 border-b border-dn-border flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    <h3 class="font-display font-bold text-sm tracking-wide text-white uppercase">Now Playing</h3>
+                </div>
+                <button id="close-right-panel-btn" class="xl:hidden text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-5 space-y-6">
+                <!-- Spinning Vinyl Art -->
+                <div class="relative mx-auto w-52 h-52 flex items-center justify-center">
+                    <div id="vinyl-glow" class="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-500/40 via-pink-500/40 to-cyan-400/40 blur-xl opacity-60 transition-opacity"></div>
+                    <!-- Vinyl Disc -->
+                    <div id="vinyl-disc" class="relative w-48 h-48 rounded-full vinyl-grooves border-4 border-slate-800 shadow-2xl flex items-center justify-center animate-spin-slow" style="animation-play-state: paused;">
+                        <!-- Center Cover Art or Album Image -->
+                        <div id="np-cover-art" class="w-24 h-24 rounded-full bg-gradient-to-tr from-amber-500 to-pink-600 flex items-center justify-center shadow-inner border-2 border-white/20 overflow-hidden bg-cover bg-center">
+                            <i id="np-cover-icon" class="fa-solid fa-music text-white text-xl"></i>
+                        </div>
+                        <!-- Vinyl Center Hole -->
+                        <div class="absolute w-3.5 h-3.5 rounded-full bg-dn-bg border border-slate-600"></div>
+                    </div>
+                </div>
+
+                <!-- Track Info & Favorite Toggle -->
+                <div class="text-center space-y-1">
+                    <div class="flex items-center justify-center gap-2">
+                        <h4 id="np-title" class="font-display font-bold text-lg text-white truncate">Kesariya Tera Vibes</h4>
+                        <button id="np-fav-btn" onclick="toggleCurrentFavorite()" class="text-slate-400 hover:text-pink-500 transition">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                    <p id="np-artist" class="text-xs text-amber-400 font-medium truncate">Arijit & Pritam Style • DN Synth</p>
+                    <div class="flex items-center justify-center gap-2 pt-1">
+                        <span id="np-genre-badge" class="inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-white/5 text-slate-300 border border-white/10">Bollywood Romance</span>
+                        <span id="np-raga-badge" class="inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">Raga Yaman</span>
+                    </div>
+                </div>
+
+                <!-- Live Equalizer Bars & Audio Details -->
+                <div class="p-3.5 rounded-2xl bg-black/30 border border-white/5 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div id="np-eq-container" class="paused-eq flex items-end gap-1 h-5 w-6">
+                            <div class="eq-bar"></div>
+                            <div class="eq-bar"></div>
+                            <div class="eq-bar"></div>
+                            <div class="eq-bar"></div>
+                        </div>
+                        <div>
+                            <p class="text-xs font-medium text-white">Audio Source</p>
+                            <p id="np-engine-type" class="text-[10px] text-slate-400">Desi Sargam & Tabla Synth</p>
+                        </div>
+                    </div>
+                    <span id="np-quality-badge" class="text-[10px] font-mono px-2 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">HD STEREO</span>
+                </div>
+
+                <!-- Lyrics / Sargam Notes Box -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Lyrics & Sargam Vibe</span>
+                        <i class="fa-solid fa-microphone-lines text-xs text-amber-400"></i>
+                    </div>
+                    <div id="np-lyrics-box" class="p-4 rounded-2xl bg-white/[0.03] border border-white/5 text-xs text-slate-300 leading-relaxed space-y-2 italic">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Full Bottom Player Bar -->
+    <footer class="relative z-30 h-24 sm:h-20 glass-player px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-6 shrink-0">
+        
+        <!-- Left: Currently Playing Track Info -->
+        <div class="flex items-center justify-between w-full sm:w-1/4 min-w-[180px]">
+            <div class="flex items-center gap-3 overflow-hidden">
+                <div id="bar-cover" class="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-pink-600 flex items-center justify-center shrink-0 shadow-lg border border-white/15 bg-cover bg-center">
+                    <i id="bar-icon" class="fa-solid fa-music text-white text-sm"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <p id="bar-title" class="text-xs sm:text-sm font-semibold text-white truncate">Kesariya Tera Vibes</p>
+                    <p id="bar-artist" class="text-[11px] text-slate-400 truncate">Arijit & Pritam Style • DN Synth</p>
+                </div>
+            </div>
+            <button id="bar-fav-btn" onclick="toggleCurrentFavorite()" class="text-slate-400 hover:text-pink-500 p-2 transition">
+                <i class="fa-regular fa-heart"></i>
+            </button>
+        </div>
+
+        <!-- Center: Playback Controls & Seek Bar -->
+        <div class="flex flex-col items-center justify-center w-full sm:max-w-xl flex-1 gap-1.5">
+            <div class="flex items-center gap-5">
+                <button id="shuffle-btn" onclick="toggleShuffle()" class="text-slate-400 hover:text-white text-xs sm:text-sm transition" title="Shuffle">
+                    <i class="fa-solid fa-shuffle"></i>
+                </button>
+                <button onclick="prevTrack()" class="text-slate-200 hover:text-amber-400 text-sm sm:text-base transition" title="Previous">
+                    <i class="fa-solid fa-backward-step"></i>
+                </button>
+                <button id="play-pause-btn" onclick="togglePlay()" class="w-10 h-10 rounded-full bg-gradient-to-r from-amber-500 via-pink-500 to-indigo-600 hover:from-amber-400 hover:to-pink-500 text-white flex items-center justify-center desi-neon-shadow transition transform active:scale-90" title="Play/Pause (Space)">
+                    <i id="play-pause-icon" class="fa-solid fa-play ml-0.5"></i>
+                </button>
+                <button onclick="nextTrack()" class="text-slate-200 hover:text-amber-400 text-sm sm:text-base transition" title="Next">
+                    <i class="fa-solid fa-forward-step"></i>
+                </button>
+                <button id="repeat-btn" onclick="toggleRepeat()" class="text-slate-400 hover:text-white text-xs sm:text-sm transition" title="Repeat Track">
+                    <i class="fa-solid fa-repeat"></i>
+                </button>
+            </div>
+
+            <!-- Interactive Seek Bar -->
+            <div class="w-full flex items-center gap-3">
+                <span id="current-time" class="text-[11px] font-mono text-slate-400 w-9 text-right">0:00</span>
+                <div class="relative flex-1 flex items-center">
+                    <input id="seek-slider" type="range" min="0" max="100" value="0" step="0.1" class="w-full z-10">
+                </div>
+                <span id="total-duration" class="text-[11px] font-mono text-slate-400 w-9">3:10</span>
+            </div>
+        </div>
+
+        <!-- Right: Speed Selector & Volume Controls -->
+        <div class="hidden md:flex items-center justify-end gap-3 w-1/4 min-w-[200px]">
+            <button id="speed-btn" onclick="cyclePlaybackSpeed()" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono font-semibold text-amber-300 transition" title="Playback Speed">
+                1x
+            </button>
+
+            <div class="flex items-center gap-2 w-28">
+                <button id="mute-btn" onclick="toggleMute()" class="text-slate-400 hover:text-white text-sm w-5">
+                    <i id="volume-icon" class="fa-solid fa-volume-high"></i>
+                </button>
+                <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="0.85" class="w-full">
+            </div>
+        </div>
+    </footer>
+
+    <!-- Audio Element for Online Previews & Local Uploaded MP3s -->
+    <audio id="html5-audio" crossorigin="anonymous"></audio>
+
+    <script>
+        /********************************************************************
+         * 1. EXTENSIVE PRE-LOADED INDIAN MUSIC CATALOG (Sargam & Desi Synth)
+         ********************************************************************/
+        // Indian Classical Sargam Scales (in Hz around C4/D4)
+        const RAGA_SCALES = {
+            yaman: [261.63, 293.66, 329.63, 369.99, 392.00, 440.00, 493.88, 523.25], // Sa Re Ga Ma# Pa Dha Ni Sa (Romantic/Evening)
+            bhairavi: [261.63, 277.18, 311.13, 349.23, 392.00, 415.30, 466.16, 523.25], // Komal notes (Soulful/Sufi/Classical)
+            desh: [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 466.16, 523.25], // Patriotic/Folk/Monsoon
+            kafi: [261.63, 293.66, 311.13, 349.23, 392.00, 440.00, 466.16, 523.25], // Punjabi/Bhangra/Groove
+            charukesi: [261.63, 293.66, 329.63, 349.23, 392.00, 415.30, 466.16, 523.25], // Classic Bollywood Melody
+            kalyani: [293.66, 329.63, 369.99, 415.30, 440.00, 493.88, 554.37, 587.33] // South Indian Mass/Melody
+        };
+
+        const tracks = [
+            {
+                id: 'ind-1',
+                title: 'Kesariya Tera Vibes',
+                artist: 'Arijit & Pritam Style • DN Synth',
+                category: 'Bollywood Romance',
+                ragaName: 'Raga Yaman',
+                duration: 190,
+                bpm: 94,
+                gradient: 'from-amber-500 via-orange-500 to-pink-600',
+                icon: 'fa-heart',
+                favorite: true,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.yaman,
+                bassNotes: [65.41, 73.42, 82.41, 98.00],
+                synthStyle: 'bollywood',
+                lyrics: [
+                    "♪ Kesariya tera ishq hai piya, rang jaaun jo main haath lagaun...",
+                    "♪ Warm sunset melodies crafted in Raga Yaman (Sa Re Ga Ma# Pa).",
+                    "♪ Soft Dholak & acoustic sitar-pluck harmonies on dn-listen."
+                ]
+            },
+            {
+                id: 'ind-2',
+                title: 'Brown Munde Punjabi Groove',
+                artist: 'AP Dhillon & Gurinder Vibe • DN Beats',
+                category: 'Punjabi Beats',
+                ragaName: 'Raga Kafi',
+                duration: 175,
+                bpm: 108,
+                gradient: 'from-amber-600 via-red-600 to-purple-700',
+                icon: 'fa-fire-flame-curved',
+                favorite: true,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.kafi,
+                bassNotes: [65.41, 77.78, 87.31, 98.00],
+                synthStyle: 'punjabi',
+                lyrics: [
+                    "♪ Desiyaan de geet goriye, sunke taan vekh...",
+                    "♪ Heavy Punjabi Dhol & 808 tumbi pluck bassline.",
+                    "♪ High-energy Chandigarh drive anthem on dn-listen."
+                ]
+            },
+            {
+                id: 'ind-3',
+                title: 'Kun Faya Sufi Soul',
+                artist: 'A.R. Rahman Tribute • DN Studio',
+                category: 'Sufi & Soulful',
+                ragaName: 'Raga Bhairavi',
+                duration: 215,
+                bpm: 84,
+                gradient: 'from-emerald-600 via-teal-600 to-cyan-700',
+                icon: 'fa-moon',
+                favorite: true,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.bhairavi,
+                bassNotes: [65.41, 69.30, 87.31, 98.00],
+                synthStyle: 'sufi',
+                lyrics: [
+                    "♪ Jab kahin pe kuch nahi bhi nahi tha, wahi tha wahi tha...",
+                    "♪ Spiritual harmonium pads & Qawwali tabla theka.",
+                    "♪ Close your eyes and feel the divine peace."
+                ]
+            },
+            {
+                id: 'ind-4',
+                title: 'Apna Time Aayega Rap Beat',
+                artist: 'Divine & Gully Hip-Hop • DN Lab',
+                category: 'Desi Hip-Hop',
+                ragaName: 'Gully Minor',
+                duration: 162,
+                bpm: 128,
+                gradient: 'from-fuchsia-600 via-purple-700 to-indigo-800',
+                icon: 'fa-microphone',
+                favorite: false,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.bhairavi,
+                bassNotes: [55.00, 65.41, 73.42, 82.41],
+                synthStyle: 'hiphop',
+                lyrics: [
+                    "♪ Tu nanga hi toh aaya hai, kya ghanta lekar jaayega...",
+                    "♪ Mumbai street boom-bap drums fused with tumbi & sub-bass.",
+                    "♪ Hustle anthem powered by Deepanshu Namdeo."
+                ]
+            },
+            {
+                id: 'ind-5',
+                title: 'Raataan Lambiyan Lo-Fi',
+                artist: 'Jubin & Tanishk Chill • DN Lofi',
+                category: 'Indian Lofi',
+                ragaName: 'Raga Desh',
+                duration: 185,
+                bpm: 78,
+                gradient: 'from-indigo-500 via-purple-500 to-pink-500',
+                icon: 'fa-cloud-moon',
+                favorite: true,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.desh,
+                bassNotes: [65.41, 73.42, 87.31, 98.00],
+                synthStyle: 'lofi',
+                lyrics: [
+                    "♪ Teri meri gallan ho gayi mashhoor, kar na kabhi tu mujhe nazron se door...",
+                    "♪ Late night Indian lofi beats with gentle bansuri & vinyl warmth.",
+                    "♪ Perfect for studying, coding, and midnight chai."
+                ]
+            },
+            {
+                id: 'ind-6',
+                title: 'Hukum Jailer South Mass Beat',
+                artist: 'Anirudh Ravichander Vibe • DN Mass',
+                category: 'South Indian Vibes',
+                ragaName: 'Raga Kalyani',
+                duration: 168,
+                bpm: 134,
+                gradient: 'from-orange-600 via-red-600 to-amber-500',
+                icon: 'fa-bolt',
+                favorite: false,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.kalyani,
+                bassNotes: [73.42, 82.41, 92.50, 110.00],
+                synthStyle: 'southmass',
+                lyrics: [
+                    "♪ Tiger ka Hukum! High-voltage Kuthu drums & brass synth lead...",
+                    "♪ Electrifying South Indian cinema mass BGM energy.",
+                    "♪ Turn up the bass to maximum!"
+                ]
+            },
+            {
+                id: 'ind-7',
+                title: 'Tum Hi Ho Romantic Synth',
+                artist: 'Mithoon & Arijit Classic • DN Synth',
+                category: 'Bollywood Romance',
+                ragaName: 'Raga Charukesi',
+                duration: 204,
+                bpm: 88,
+                gradient: 'from-pink-600 via-rose-600 to-purple-700',
+                icon: 'fa-heart-pulse',
+                favorite: false,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.charukesi,
+                bassNotes: [65.41, 77.78, 87.31, 98.00],
+                synthStyle: 'bollywood',
+                lyrics: [
+                    "♪ Hum tere bin ab reh nahi sakte, tere bina kya wajood mera...",
+                    "♪ Soul-stirring piano & monsoon strings in Raga Charukesi.",
+                    "♪ Timeless Bollywood romance on dn-listen."
+                ]
+            },
+            {
+                id: 'ind-8',
+                title: 'Chaiyya Desi Train Bass',
+                artist: 'Sukhwinder & Rahman Groove • DN Mix',
+                category: 'Punjabi Beats',
+                ragaName: 'Raga Desh',
+                duration: 178,
+                bpm: 116,
+                gradient: 'from-amber-500 via-emerald-600 to-cyan-600',
+                icon: 'fa-train-subway',
+                favorite: false,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.desh,
+                bassNotes: [65.41, 82.41, 98.00, 110.00],
+                synthStyle: 'punjabi',
+                lyrics: [
+                    "♪ Jinke sar ho ishq ki chhaon, paaon ke neeche jannat hogi...",
+                    "♪ Rhythmic train-chug percussion blended with Sufi folk vocals.",
+                    "♪ Iconic Indian groove reimagined."
+                ]
+            },
+            {
+                id: 'ind-9',
+                title: 'Diljit Lover Bhangra Drop',
+                artist: 'Diljit Dosanjh Vibe • DN Bhangra',
+                category: 'Punjabi Beats',
+                ragaName: 'Raga Kafi',
+                duration: 160,
+                bpm: 112,
+                gradient: 'from-yellow-500 via-amber-600 to-pink-600',
+                icon: 'fa-compact-disc',
+                favorite: false,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.kafi,
+                bassNotes: [65.41, 73.42, 87.31, 98.00],
+                synthStyle: 'punjabi',
+                lyrics: [
+                    "♪ Tera ni main tera ni main lover, ankhon meinchamke star...",
+                    "♪ Modern urban Punjabi pop with crisp dholak & synth plucks.",
+                    "♪ Guaranteed to make you vibe."
+                ]
+            },
+            {
+                id: 'ind-10',
+                title: 'Pasoori Coke Studio Fusion',
+                artist: 'Ali Sethi & Shae Gill Vibe • DN Fusion',
+                category: 'Classical Fusion',
+                ragaName: 'Raga Bhairavi',
+                duration: 195,
+                bpm: 98,
+                gradient: 'from-rose-500 via-amber-500 to-indigo-600',
+                icon: 'fa-wand-magic-sparkles',
+                favorite: false,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.bhairavi,
+                bassNotes: [65.41, 77.78, 87.31, 98.00],
+                synthStyle: 'classical',
+                lyrics: [
+                    "♪ Agg laawan majboori nu, aan jaan di pasoori nu...",
+                    "♪ Classical thumri & rubab pluck fused with modern reggaeton tabla.",
+                    "♪ Cross-border Desi fusion masterpiece."
+                ]
+            },
+            {
+                id: 'ind-11',
+                title: 'Ilahi Himalayan Travel Acoustic',
+                artist: 'Pritam & Arijit Wanderlust • DN Unplugged',
+                category: 'Bollywood Romance',
+                ragaName: 'Raga Yaman',
+                duration: 172,
+                bpm: 106,
+                gradient: 'from-cyan-500 via-blue-500 to-emerald-500',
+                icon: 'fa-mountain-sun',
+                favorite: false,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.yaman,
+                bassNotes: [65.41, 82.41, 98.00, 110.00],
+                synthStyle: 'bollywood',
+                lyrics: [
+                    "♪ Mera falsafa kandhe pe mera basta, chala main jahaan le chala mujhe rasta...",
+                    "♪ Breezy acoustic strumming & upbeat dholak for road trips.",
+                    "♪ Manali to Leh highway anthem."
+                ]
+            },
+            {
+                id: 'ind-12',
+                title: 'Maan Meri Jaan Sunset Chill',
+                artist: 'King Pop Vibe • DN Chill',
+                category: 'Indian Lofi',
+                ragaName: 'Raga Yaman',
+                duration: 166,
+                bpm: 92,
+                gradient: 'from-purple-600 via-pink-500 to-amber-500',
+                icon: 'fa-star',
+                favorite: false,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.yaman,
+                bassNotes: [65.41, 73.42, 82.41, 98.00],
+                synthStyle: 'lofi',
+                lyrics: [
+                    "♪ Main teri aankhon mein udaasi kabhi dekh sakda nai...",
+                    "♪ Smooth Indian pop chords with warm sub-bass & finger snaps."
+                ]
+            },
+            {
+                id: 'ind-13',
+                title: 'Oo Antava & Arabic Kuthu Groove',
+                artist: 'DSP & Anirudh South Club • DN Electro',
+                category: 'South Indian Vibes',
+                ragaName: 'Raga Kalyani',
+                duration: 174,
+                bpm: 126,
+                gradient: 'from-red-600 via-pink-600 to-purple-700',
+                icon: 'fa-bolt-lightning',
+                favorite: false,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.kalyani,
+                bassNotes: [73.42, 87.31, 98.00, 110.00],
+                synthStyle: 'southmass',
+                lyrics: [
+                    "♪ Halamithi Habibo! South Indian Nadaswaram & Thavil percussion drop...",
+                    "♪ Dancefloor filler across Chennai, Hyderabad & Bengaluru."
+                ]
+            },
+            {
+                id: 'ind-14',
+                title: 'Raga Bhairavi Sitar & Tabla Ambient',
+                artist: 'Deepanshu Namdeo • Classical Fusion',
+                category: 'Classical Fusion',
+                ragaName: 'Raga Bhairavi',
+                duration: 210,
+                bpm: 86,
+                gradient: 'from-indigo-600 via-amber-600 to-teal-600',
+                icon: 'fa-guitar',
+                favorite: false,
+                isLocal: false,
+                isOnline: false,
+                scale: RAGA_SCALES.bhairavi,
+                bassNotes: [65.41, 65.41, 98.00, 65.41], // Tanpura Sa-Pa drone
+                synthStyle: 'classical',
+                lyrics: [
+                    "♪ Traditional Tanpura Sa-Pa drone with melodic Sitar alaap...",
+                    "♪ Accompanied by Teen Taal (16-beat) Tabla rhythm.",
+                    "♪ Pure Indian classical mindfulness on dn-listen."
+                ]
+            }
+        ];
+
+        /********************************************************************
+         * 2. PLAYER & WEB AUDIO API STATE
+         ********************************************************************/
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+        let isShuffle = false;
+        let isRepeat = false;
+        let isMuted = false;
+        let volume = 0.85;
+        let playbackSpeed = 1.0;
+        const speedOptions = [0.5, 1.0, 1.25, 1.5, 2.0];
+        let activeCategory = 'All';
+        let activeNav = 'home';
+        let searchQuery = '';
+        let visualizerMode = 0; // 0: Bars, 1: Wave, 2: Pulse
+
+        let currentTimeSec = 0;
+        let stepCounter = 0;
+        let synthSchedulerId = null;
+        let progressIntervalId = null;
+
+        let audioCtx = null;
+        let analyser = null;
+        let masterGain = null;
+        let html5MediaSource = null;
+        const html5Audio = document.getElementById('html5-audio');
+
+        function initAudioEngine() {
+            if (audioCtx) return;
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            masterGain = audioCtx.createGain();
+            masterGain.gain.value = isMuted ? 0 : volume;
+
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 128;
+            analyser.smoothingTimeConstant = 0.82;
+
+            masterGain.connect(analyser);
+            analyser.connect(audioCtx.destination);
+
+            try {
+                html5MediaSource = audioCtx.createMediaElementSource(html5Audio);
+                html5MediaSource.connect(masterGain);
+            } catch (e) {
+                console.warn('MediaElementSource ready');
+            }
+        }
+
+        /********************************************************************
+         * 3. DESI SARGAM & TABLA / DHOL WEB AUDIO SYNTHESIZER
+         ********************************************************************/
+        // Tabla Baya (Deep resonant Indian bass drum with pitch slide)
+        function playTablaBaya(time, pitchSlide = true) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(115, time);
+            if (pitchSlide) {
+                osc.frequency.exponentialRampToValueAtTime(145, time + 0.09);
+                osc.frequency.exponentialRampToValueAtTime(62, time + 0.26);
+            } else {
+                osc.frequency.exponentialRampToValueAtTime(48, time + 0.22);
+            }
+
+            gain.gain.setValueAtTime(0.85, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.28);
+
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(time);
+            osc.stop(time + 0.29);
+        }
+
+        // Tabla Daya ('Na' / 'Tin' high tuned wooden rim hit)
+        function playTablaDaya(time, freq = 261.63) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq * 2, time);
+            osc.frequency.exponentialRampToValueAtTime(freq * 1.95, time + 0.14);
+
+            gain.gain.setValueAtTime(0.32, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(time);
+            osc.stop(time + 0.16);
+        }
+
+        // Ghungroo / Dhol Tasha crisp metallic shaker
+        function playChimeHat(time, open = false) {
+            const bufferSize = audioCtx.sampleRate * (open ? 0.14 : 0.045);
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(6800, time);
+
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(open ? 0.16 : 0.10, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + (open ? 0.13 : 0.04));
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(masterGain);
+            noise.start(time);
+        }
+
+        // Sitar / Tumbi / Harmonium / Bansuri Melodic Synthesizer
+        function playDesiNote(freq, time, duration, style = 'bollywood', isBass = false) {
+            const osc = audioCtx.createOscillator();
+            const filter = audioCtx.createBiquadFilter();
+            const gain = audioCtx.createGain();
+
+            if (isBass) {
+                // Tanpura Drone or Punjabi 808 Bass
+                osc.type = (style === 'classical' || style === 'sufi') ? 'sawtooth' : 'triangle';
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(style === 'southmass' ? 520 : 280, time);
+                gain.gain.setValueAtTime(0.35, time);
+                gain.gain.exponentialRampToValueAtTime(0.008, time + duration);
+            } else {
+                // Lead Indian Instrument timbre
+                if (style === 'lofi') {
+                    osc.type = 'sine'; // Bansuri Flute vibe
+                } else if (style === 'classical' || style === 'punjabi') {
+                    osc.type = 'sawtooth'; // Sitar / Tumbi pluck
+                } else if (style === 'sufi') {
+                    osc.type = 'triangle'; // Harmonium reed
+                } else {
+                    osc.type = 'sawtooth'; // Bollywood / South synth lead
+                }
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(style === 'lofi' ? 1200 : 2800, time);
+                filter.frequency.exponentialRampToValueAtTime(650, time + duration);
+
+                gain.gain.setValueAtTime(0.01, time);
+                gain.gain.linearRampToValueAtTime(0.20, time + 0.025);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+            }
+
+            osc.frequency.setValueAtTime(freq, time);
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(masterGain);
+
+            osc.start(time);
+            osc.stop(time + duration + 0.02);
+        }
+
+        function startProceduralLoop() {
+            stopProceduralLoop();
+            const track = tracks[currentTrackIndex];
+            if (!track || track.isLocal || track.isOnline) return;
+
+            const stepDurationMs = ((60 / track.bpm) / 4) * 1000 / playbackSpeed;
+
+            synthSchedulerId = setInterval(() => {
+                if (!isPlaying || !audioCtx) return;
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const now = audioCtx.currentTime;
+                const step = stepCounter % 16;
+
+                // Desi Taal Percussion Patterns (Dhol / Tabla / Kaharwa / Bhangra)
+                if (track.synthStyle === 'punjabi' || track.synthStyle === 'southmass') {
+                    // Energetic Bhangra Chaal / Kuthu Beat
+                    if (step === 0 || step === 3 || step === 6 || step === 8 || step === 11 || step === 14) {
+                        playTablaBaya(now, step % 4 === 0);
+                    }
+                    if (step === 4 || step === 12) {
+                        playTablaDaya(now, track.scale[0]);
+                    }
+                } else {
+                    // Kaharwa / Teen Taal / Bollywood Groove
+                    if (step === 0 || step === 6 || step === 8 || step === 10) {
+                        playTablaBaya(now, true);
+                    }
+                    if (step === 4 || step === 12 || step === 14) {
+                        playTablaDaya(now, track.scale[0]);
+                    }
+                }
+
+                if (step % 2 === 0) {
+                    playChimeHat(now, step === 14);
+                }
+
+                // Bassline / Tanpura Drone
+                if (step % 2 === 0) {
+                    const bassIdx = Math.floor(step / 4) % track.bassNotes.length;
+                    playDesiNote(track.bassNotes[bassIdx], now, 0.24, track.synthStyle, true);
+                }
+
+                // Sargam Melodic Phrases (Sa Re Ga Ma Pa Dha Ni Sa)
+                const sargamPattern = [0, 2, 4, 5, 4, 6, 7, 4, 3, 2, 1, 2, 4, 2, 1, 0];
+                if (step % 2 === 0 || track.synthStyle === 'punjabi' || track.synthStyle === 'classical' || track.synthStyle === 'southmass') {
+                    const noteIndex = sargamPattern[step % sargamPattern.length] % track.scale.length;
+                    const octaveShift = (step === 6 || step === 12) ? 1.5 : 1;
+                    playDesiNote(track.scale[noteIndex] * octaveShift, now, 0.29, track.synthStyle, false);
+                }
+
+                stepCounter++;
+            }, stepDurationMs);
+
+            progressIntervalId = setInterval(() => {
+                if (!isPlaying) return;
+                currentTimeSec += 0.25 * playbackSpeed;
+                if (currentTimeSec >= track.duration) {
+                    handleTrackEnd();
+                } else {
+                    updateSeekUI(currentTimeSec, track.duration);
+                }
+            }, 250);
+        }
+
+        function stopProceduralLoop() {
+            if (synthSchedulerId) clearInterval(synthSchedulerId);
+            if (progressIntervalId) clearInterval(progressIntervalId);
+            synthSchedulerId = null;
+            progressIntervalId = null;
+        }
+
+        /********************************************************************
+         * 4. ONLINE INDIAN SONGS FETCHER (Live iTunes Search API)
+         ********************************************************************/
+        async function fetchArtistSongs(queryText, autoSwitchTab = false) {
+            if (!queryText) return;
+            showToast(`Fetching Indian songs for "${queryText}"...`, 'fa-spinner fa-spin');
+
+            try {
+                const url = `https://itunes.apple.com/search?term=${encodeURIComponent(queryText)}&country=IN&media=music&entity=song&limit=16`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.results && data.results.length > 0) {
+                    // Remove older online tracks with same ID to avoid duplicates
+                    let addedCount = 0;
+                    data.results.reverse().forEach(item => {
+                        if (!item.previewUrl) return;
+                        const exists = tracks.some(t => t.id === 'itunes-' + item.trackId);
+                        if (!exists) {
+                            const highResCover = item.artworkUrl100 ? item.artworkUrl100.replace('100x100bb', '300x300bb') : null;
+                            tracks.unshift({
+                                id: 'itunes-' + item.trackId,
+                                title: item.trackName,
+                                artist: item.artistName + ' • ' + (item.collectionName || 'Indian Single'),
+                                category: 'Online Stream',
+                                ragaName: item.primaryGenreName || 'Indian Pop',
+                                duration: 30,
+                                bpm: 110,
+                                gradient: 'from-amber-500 via-pink-600 to-indigo-700',
+                                icon: 'fa-music',
+                                coverUrl: highResCover,
+                                favorite: false,
+                                isLocal: false,
+                                isOnline: true,
+                                audioUrl: item.previewUrl,
+                                lyrics: [
+                                    `♪ Official Online Preview: "${item.trackName}"`,
+                                    `♪ Artist: ${item.artistName}`,
+                                    `♪ Album: ${item.collectionName || 'Indian Hits'}`,
+                                    `♪ Streaming live in high definition on dn-listen.`
+                                ]
+                            });
+                            addedCount++;
+                        }
+                    });
+
+                    if (autoSwitchTab) {
+                        filterByCategory('Online Stream');
+                    } else {
+                        renderTracks();
+                    }
+                    showToast(`Loaded ${addedCount || data.results.length} real Indian songs for "${queryText}"!`, 'fa-circle-check');
+                } else {
+                    showToast(`Showing built-in Indian hits for "${queryText}"`, 'fa-music');
+                }
+            } catch (err) {
+                console.warn('Offline or API blocked, using built-in Indian synth tracks:', err);
+                showToast('Offline Mode: Playing Built-in Indian Synth Catalog', 'fa-wifi');
+            }
+        }
+
+        function searchOnlineITunes() {
+            const q = document.getElementById('search-input').value.trim() || 'Bollywood Hits Arijit Singh';
+            document.getElementById('search-input').value = '';
+            searchQuery = '';
+            document.getElementById('clear-search-btn').classList.add('hidden');
+            fetchArtistSongs(q, true);
+        }
+
+        /********************************************************************
+         * 5. CORE PLAYBACK CONTROLS
+         ********************************************************************/
+        function loadAndPlayTrack(index) {
+            initAudioEngine();
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            currentTrackIndex = index;
+            const track = tracks[currentTrackIndex];
+            currentTimeSec = 0;
+            stepCounter = 0;
+
+            stopProceduralLoop();
+            html5Audio.pause();
+
+            isPlaying = true;
+
+            if ((track.isLocal || track.isOnline) && track.audioUrl) {
+                html5Audio.src = track.audioUrl;
+                html5Audio.playbackRate = playbackSpeed;
+                html5Audio.play().catch(() => {
+                    // Seamless fallback to Sargam synth if online stream fails
+                    track.isOnline = false;
+                    track.scale = RAGA_SCALES.yaman;
+                    track.bassNotes = [65.41, 73.42, 82.41, 98.00];
+                    track.synthStyle = 'bollywood';
+                    startProceduralLoop();
+                });
+            } else {
+                startProceduralLoop();
+            }
+
+            updatePlayerUI();
+            renderTracks();
+        }
+
+        function togglePlay() {
+            initAudioEngine();
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const track = tracks[currentTrackIndex];
+            isPlaying = !isPlaying;
+
+            if (isPlaying) {
+                if (track.isLocal || track.isOnline) {
+                    if (!html5Audio.src) html5Audio.src = track.audioUrl;
+                    html5Audio.playbackRate = playbackSpeed;
+                    html5Audio.play();
+                } else {
+                    startProceduralLoop();
+                }
+            } else {
+                if (track.isLocal || track.isOnline) {
+                    html5Audio.pause();
+                } else {
+                    stopProceduralLoop();
+                }
+            }
+
+            updatePlayerUI();
+            renderTracks();
+        }
+
+        function nextTrack() {
+            const filtered = getFilteredTracks();
+            const pool = filtered.length > 0 ? filtered : tracks;
+            if (isShuffle) {
+                const randomTrack = pool[Math.floor(Math.random() * pool.length)];
+                const realIdx = tracks.findIndex(t => t.id === randomTrack.id);
+                loadAndPlayTrack(realIdx >= 0 ? realIdx : 0);
+            } else {
+                const nextIdx = (currentTrackIndex + 1) % tracks.length;
+                loadAndPlayTrack(nextIdx);
+            }
+        }
+
+        function prevTrack() {
+            if (currentTimeSec > 4) {
+                seekToRatio(0);
+                return;
+            }
+            const prevIdx = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+            loadAndPlayTrack(prevIdx);
+        }
+
+        function handleTrackEnd() {
+            if (isRepeat) {
+                loadAndPlayTrack(currentTrackIndex);
+            } else {
+                nextTrack();
+            }
+        }
+
+        function playFeatured() {
+            const idx = tracks.findIndex(t => t.id === 'ind-1');
+            loadAndPlayTrack(idx >= 0 ? idx : 0);
+            showToast('Playing: Kesariya Tera Vibes', 'fa-heart');
+        }
+
+        function toggleShuffle() {
+            isShuffle = !isShuffle;
+            const btn = document.getElementById('shuffle-btn');
+            btn.className = isShuffle
+                ? 'text-amber-400 text-xs sm:text-sm transition drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]'
+                : 'text-slate-400 hover:text-white text-xs sm:text-sm transition';
+            showToast(isShuffle ? 'Shuffle On' : 'Shuffle Off', 'fa-shuffle');
+        }
+
+        function toggleRepeat() {
+            isRepeat = !isRepeat;
+            const btn = document.getElementById('repeat-btn');
+            btn.className = isRepeat
+                ? 'text-pink-400 text-xs sm:text-sm transition drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]'
+                : 'text-slate-400 hover:text-white text-xs sm:text-sm transition';
+            showToast(isRepeat ? 'Repeat Current Song On' : 'Repeat Off', 'fa-repeat');
+        }
+
+        function cyclePlaybackSpeed() {
+            const idx = speedOptions.indexOf(playbackSpeed);
+            playbackSpeed = speedOptions[(idx + 1) % speedOptions.length];
+            document.getElementById('speed-btn').textContent = playbackSpeed + 'x';
+
+            const track = tracks[currentTrackIndex];
+            if (track.isLocal || track.isOnline) {
+                html5Audio.playbackRate = playbackSpeed;
+            } else if (isPlaying) {
+                startProceduralLoop();
+            }
+            showToast(`Playback Speed: ${playbackSpeed}x`, 'fa-gauge-high');
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            if (masterGain) {
+                masterGain.gain.value = isMuted ? 0 : volume;
+            }
+            updateVolumeIcon();
+        }
+
+        function updateVolumeIcon() {
+            const icon = document.getElementById('volume-icon');
+            if (isMuted || volume === 0) {
+                icon.className = 'fa-solid fa-volume-xmark text-pink-500';
+            } else if (volume < 0.5) {
+                icon.className = 'fa-solid fa-volume-low text-amber-400';
+            } else {
+                icon.className = 'fa-solid fa-volume-high text-slate-300';
+            }
+        }
+
+        function seekToRatio(ratio) {
+            const track = tracks[currentTrackIndex];
+            if ((track.isLocal || track.isOnline) && html5Audio.duration) {
+                html5Audio.currentTime = ratio * html5Audio.duration;
+                updateSeekUI(html5Audio.currentTime, html5Audio.duration);
+            } else {
+                currentTimeSec = ratio * track.duration;
+                updateSeekUI(currentTimeSec, track.duration);
+            }
+        }
+
+        html5Audio.addEventListener('timeupdate', () => {
+            const track = tracks[currentTrackIndex];
+            if (track && (track.isLocal || track.isOnline) && html5Audio.duration) {
+                currentTimeSec = html5Audio.currentTime;
+                track.duration = Math.floor(html5Audio.duration);
+                updateSeekUI(html5Audio.currentTime, html5Audio.duration);
+            }
+        });
+
+        html5Audio.addEventListener('ended', handleTrackEnd);
+
+        /********************************************************************
+         * 6. UPLOAD ALL LOCAL INDIAN MP3s & DRAG-AND-DROP HANDLER
+         ********************************************************************/
+        function handleUploadedFiles(fileList) {
+            const files = Array.from(fileList).filter(f => f.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|flac|aac)$/i.test(f.name));
+            if (!files.length) {
+                showToast('Please select valid MP3 or audio files', 'fa-circle-exclamation');
+                return;
+            }
+
+            files.forEach((file) => {
+                const url = URL.createObjectURL(file);
+                const cleanTitle = file.name.replace(/\.[^/.]+$/, "");
+                tracks.unshift({
+                    id: 'local-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
+                    title: cleanTitle,
+                    artist: 'My Indian MP3 Upload • DN Player',
+                    category: 'Uploads',
+                    ragaName: 'Local Audio',
+                    duration: 210,
+                    bpm: 120,
+                    gradient: 'from-amber-500 via-emerald-500 to-cyan-600',
+                    icon: 'fa-file-audio',
+                    favorite: true,
+                    isLocal: true,
+                    isOnline: false,
+                    audioUrl: url,
+                    lyrics: [
+                        `♪ Playing your uploaded Indian song: "${file.name}"`,
+                        "♪ Direct high-resolution local playback with real-time visualizer.",
+                        "♪ Loaded into your dn-listen library."
+                    ]
+                });
+            });
+
+            filterByCategory('Uploads');
+            loadAndPlayTrack(0);
+            showToast(`Uploaded & playing ${files.length} Indian song(s)!`, 'fa-cloud-arrow-up');
+        }
+
+        document.getElementById('local-file-input').addEventListener('change', (e) => {
+            handleUploadedFiles(e.target.files);
+            e.target.value = '';
+        });
+
+        document.getElementById('local-folder-input').addEventListener('change', (e) => {
+            handleUploadedFiles(e.target.files);
+            e.target.value = '';
+        });
+
+        // Drag and Drop Anywhere on Window
+        const dropZone = document.getElementById('drop-zone');
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            if (e.dataTransfer && e.dataTransfer.files.length) {
+                handleUploadedFiles(e.dataTransfer.files);
+            }
+        });
+
+        /********************************************************************
+         * 7. REAL-TIME CANVAS AUDIO VISUALIZER (Saffron / Magenta / Cyan)
+         ********************************************************************/
+        const canvas = document.getElementById('visualizer-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width || 280;
+            canvas.height = rect.height || 96;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function cycleVisualizerMode() {
+            visualizerMode = (visualizerMode + 1) % 3;
+            const names = ['Bars', 'Wave', 'Pulse'];
+            document.getElementById('viz-mode-btn').textContent = `Mode: ${names[visualizerMode]}`;
+        }
+
+        function drawVisualizer() {
+            requestAnimationFrame(drawVisualizer);
+
+            const w = canvas.width;
+            const h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            const bufferLength = analyser ? analyser.frequencyBinCount : 64;
+            const dataArray = new Uint8Array(bufferLength);
+
+            if (analyser && isPlaying) {
+                if (visualizerMode === 1) {
+                    analyser.getByteTimeDomainData(dataArray);
+                } else {
+                    analyser.getByteFrequencyData(dataArray);
+                }
+            } else {
+                const t = Date.now() * 0.002;
+                for (let i = 0; i < bufferLength; i++) {
+                    dataArray[i] = visualizerMode === 1
+                        ? 128 + Math.sin(t + i * 0.2) * 8
+                        : 14 + Math.sin(t + i * 0.3) * 8;
+                }
+            }
+
+            if (visualizerMode === 0) {
+                const barCount = 32;
+                const barWidth = (w / barCount) - 2;
+                for (let i = 0; i < barCount; i++) {
+                    const val = dataArray[i] || 10;
+                    const percent = val / 255;
+                    const barHeight = Math.max(4, percent * (h - 8));
+                    const x = i * (barWidth + 2);
+                    const y = h - barHeight;
+
+                    const grad = ctx.createLinearGradient(0, h, 0, 0);
+                    grad.addColorStop(0, '#F59E0B');
+                    grad.addColorStop(0.55, '#EC4899');
+                    grad.addColorStop(1, '#06B6D4');
+
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.roundRect(x, y, barWidth, barHeight, 3);
+                    ctx.fill();
+                }
+            } else if (visualizerMode === 1) {
+                ctx.lineWidth = 2.5;
+                const grad = ctx.createLinearGradient(0, 0, w, 0);
+                grad.addColorStop(0, '#F59E0B');
+                grad.addColorStop(0.5, '#EC4899');
+                grad.addColorStop(1, '#06B6D4');
+                ctx.strokeStyle = grad;
+                ctx.beginPath();
+
+                const sliceWidth = w / bufferLength;
+                let x = 0;
+                for (let i = 0; i < bufferLength; i++) {
+                    const v = dataArray[i] / 128.0;
+                    const y = (v * h) / 2;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                    x += sliceWidth;
+                }
+                ctx.stroke();
+            } else {
+                const centerY = h / 2;
+                const barCount = 28;
+                const barWidth = (w / barCount) - 2;
+                for (let i = 0; i < barCount; i++) {
+                    const val = dataArray[i] || 12;
+                    const halfH = Math.max(2, (val / 255) * (h / 2 - 4));
+                    const x = i * (barWidth + 2);
+
+                    ctx.fillStyle = i % 2 === 0 ? '#F59E0B' : '#EC4899';
+                    ctx.beginPath();
+                    ctx.roundRect(x, centerY - halfH, barWidth, halfH * 2, 3);
+                    ctx.fill();
+                }
+            }
+        }
+
+        /********************************************************************
+         * 8. UI RENDERING & INTERACTION
+         ********************************************************************/
+        function formatTime(sec) {
+            if (!sec || isNaN(sec)) return '0:00';
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function updateSeekUI(current, total) {
+            document.getElementById('current-time').textContent = formatTime(current);
+            document.getElementById('total-duration').textContent = formatTime(total);
+            const slider = document.getElementById('seek-slider');
+            if (total > 0) {
+                slider.value = ((current / total) * 100).toFixed(1);
+            }
+        }
+
+        function updatePlayerUI() {
+            const track = tracks[currentTrackIndex];
+            if (!track) return;
+
+            const playIcon = document.getElementById('play-pause-icon');
+            playIcon.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play ml-0.5';
+
+            // Bottom Bar
+            document.getElementById('bar-title').textContent = track.title;
+            document.getElementById('bar-artist').textContent = track.artist;
+            const barCover = document.getElementById('bar-cover');
+            const barIcon = document.getElementById('bar-icon');
+            if (track.coverUrl) {
+                barCover.style.backgroundImage = `url('${track.coverUrl}')`;
+                barIcon.className = 'hidden';
+            } else {
+                barCover.style.backgroundImage = '';
+                barCover.className = `w-11 h-11 rounded-xl bg-gradient-to-tr ${track.gradient} flex items-center justify-center shrink-0 shadow-lg border border-white/15`;
+                barIcon.className = `fa-solid ${track.icon} text-white text-sm`;
+            }
+
+            // Right Drawer Now Playing
+            document.getElementById('np-title').textContent = track.title;
+            document.getElementById('np-artist').textContent = track.artist;
+            document.getElementById('np-genre-badge').textContent = track.category;
+            document.getElementById('np-raga-badge').textContent = track.ragaName || 'Desi Beat';
+
+            const npCover = document.getElementById('np-cover-art');
+            const npIcon = document.getElementById('np-cover-icon');
+            if (track.coverUrl) {
+                npCover.style.backgroundImage = `url('${track.coverUrl}')`;
+                npIcon.className = 'hidden';
+            } else {
+                npCover.style.backgroundImage = '';
+                npCover.className = `w-24 h-24 rounded-full bg-gradient-to-tr ${track.gradient} flex items-center justify-center shadow-inner border-2 border-white/20 overflow-hidden`;
+                npIcon.className = `fa-solid ${track.icon} text-white text-xl`;
+            }
+
+            document.getElementById('np-engine-type').textContent = track.isLocal
+                ? 'Local MP3 File'
+                : (track.isOnline ? 'Live Online Stream' : 'Desi Sargam & Tabla Synth');
+            document.getElementById('viz-bpm-tag').textContent = track.ragaName || `${track.bpm} BPM`;
+            document.getElementById('viz-status-text').textContent = isPlaying ? `Playing: ${track.title}` : 'Paused';
+
+            const vinyl = document.getElementById('vinyl-disc');
+            const eqContainer = document.getElementById('np-eq-container');
+            vinyl.style.animationPlayState = isPlaying ? 'running' : 'paused';
+            if (isPlaying) {
+                eqContainer.classList.remove('paused-eq');
+            } else {
+                eqContainer.classList.add('paused-eq');
+            }
+
+            const favIconClass = track.favorite ? 'fa-solid fa-heart text-pink-500' : 'fa-regular fa-heart';
+            document.getElementById('bar-fav-btn').innerHTML = `<i class="${favIconClass}"></i>`;
+            document.getElementById('np-fav-btn').innerHTML = `<i class="${favIconClass}"></i>`;
+
+            const lyricsBox = document.getElementById('np-lyrics-box');
+            lyricsBox.innerHTML = track.lyrics.map(line => `<p>${line}</p>`).join('');
+
+            updateSeekUI(currentTimeSec, track.duration);
+            updateFavoritesBadge();
+        }
+
+        function getFilteredTracks() {
+            return tracks.filter((track) => {
+                const matchesNav = activeNav === 'favorites' ? track.favorite : true;
+                const matchesCat = activeCategory === 'All' ? true : track.category === activeCategory;
+                const matchesSearch = track.title.toLowerCase().includes(searchQuery) ||
+                                      track.artist.toLowerCase().includes(searchQuery) ||
+                                      track.category.toLowerCase().includes(searchQuery) ||
+                                      (track.ragaName && track.ragaName.toLowerCase().includes(searchQuery));
+                return matchesNav && matchesCat && matchesSearch;
+            });
+        }
+
+        function renderTracks() {
+            const filtered = getFilteredTracks();
+            const grid = document.getElementById('tracks-grid');
+            const list = document.getElementById('tracks-list');
+            document.getElementById('track-count-label').textContent = `${filtered.length} song${filtered.length === 1 ? '' : 's'}`;
+
+            if (filtered.length === 0) {
+                const emptyHtml = `
+                    <div class="col-span-full py-12 text-center glass-panel rounded-2xl border border-dn-border space-y-3">
+                        <i class="fa-solid fa-compact-disc text-3xl text-amber-500/60"></i>
+                        <p class="text-sm font-semibold text-slate-200">No matching songs in this filter</p>
+                        <div class="flex items-center justify-center gap-3 pt-1">
+                            <button onclick="searchOnlineITunes()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-pink-600 text-xs font-semibold text-white">
+                                Search Online for "${searchQuery || 'Bollywood Hits'}"
+                            </button>
+                            <button onclick="filterByCategory('All')" class="px-4 py-2 rounded-xl bg-white/10 text-xs text-slate-200">
+                                Show All Songs
+                            </button>
+                        </div>
+                    </div>`;
+                grid.innerHTML = emptyHtml;
+                list.innerHTML = '';
+                return;
+            }
+
+            grid.innerHTML = filtered.map((track) => {
+                const realIdx = tracks.findIndex(t => t.id === track.id);
+                const isCurrent = realIdx === currentTrackIndex;
+                const activeBorder = isCurrent ? 'border-amber-500/70 desi-neon-shadow' : 'border-dn-border hover:border-white/20';
+                const coverStyle = track.coverUrl ? `style="background-image: url('${track.coverUrl}'); background-size: cover; background-position: center;"` : '';
+
+                return `
+                <div class="glass-panel rounded-2xl p-4 border ${activeBorder} transition-all group flex flex-col justify-between">
+                    <div>
+                        <div onclick="loadAndPlayTrack(${realIdx})" ${coverStyle} class="relative h-36 rounded-xl bg-gradient-to-br ${track.gradient} flex items-center justify-center cursor-pointer overflow-hidden mb-3.5 shadow-md">
+                            ${!track.coverUrl ? `<i class="fa-solid ${track.icon} text-white/85 text-4xl group-hover:scale-110 transition-transform duration-300"></i>` : ''}
+                            
+                            <span class="absolute top-2.5 left-2.5 text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-black/65 backdrop-blur-md text-amber-300 border border-white/10">
+                                ${track.category}
+                            </span>
+
+                            <div class="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <div class="w-11 h-11 rounded-full bg-amber-400 text-dn-bg flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition">
+                                    <i class="fa-solid ${isCurrent && isPlaying ? 'fa-pause' : 'fa-play ml-0.5'} text-base"></i>
+                                </div>
+                            </div>
+
+                            ${isCurrent ? `
+                            <div class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-black/75 backdrop-blur-md flex items-center gap-1.5">
+                                <div class="${isPlaying ? '' : 'paused-eq'} flex items-end gap-0.5 h-3">
+                                    <div class="eq-bar"></div>
+                                    <div class="eq-bar"></div>
+                                    <div class="eq-bar"></div>
+                                </div>
+                                <span class="text-[10px] font-semibold text-amber-300">${isPlaying ? 'Playing' : 'Paused'}</span>
+                            </div>` : ''}
+                        </div>
+
+                        <div class="flex items-start justify-between gap-2">
+                            <div onclick="loadAndPlayTrack(${realIdx})" class="cursor-pointer overflow-hidden">
+                                <h4 class="font-display font-bold text-sm text-white truncate group-hover:text-amber-300 transition">${track.title}</h4>
+                                <p class="text-xs text-slate-400 truncate mt-0.5">${track.artist}</p>
+                            </div>
+                            <button onclick="toggleTrackFavorite('${track.id}')" class="text-slate-400 hover:text-pink-500 p-1 transition shrink-0">
+                                <i class="${track.favorite ? 'fa-solid fa-heart text-pink-500' : 'fa-regular fa-heart'} text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-400">
+                        <span><i class="fa-regular fa-clock mr-1"></i>${formatTime(track.duration)}</span>
+                        <span class="font-mono text-amber-400/90 truncate max-w-[110px]">${track.ragaName || track.bpm + ' BPM'}</span>
+                    </div>
+                </div>`;
+            }).join('');
+
+            list.innerHTML = filtered.map((track, idx) => {
+                const realIdx = tracks.findIndex(t => t.id === track.id);
+                const isCurrent = realIdx === currentTrackIndex;
+                const thumbStyle = track.coverUrl ? `style="background-image: url('${track.coverUrl}'); background-size: cover; background-position: center;"` : '';
+
+                return `
+                <div class="flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition ${isCurrent ? 'bg-amber-500/10' : ''}">
+                    <div onclick="loadAndPlayTrack(${realIdx})" class="flex items-center gap-3.5 flex-1 cursor-pointer overflow-hidden">
+                        <span class="w-5 text-xs font-mono text-slate-500 text-center">
+                            ${isCurrent && isPlaying ? '<i class="fa-solid fa-volume-high text-amber-400 animate-pulse"></i>' : (idx + 1)}
+                        </span>
+                        <div ${thumbStyle} class="w-9 h-9 rounded-lg bg-gradient-to-tr ${track.gradient} flex items-center justify-center shrink-0">
+                            ${!track.coverUrl ? `<i class="fa-solid ${track.icon} text-white text-xs"></i>` : ''}
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="text-xs sm:text-sm font-semibold ${isCurrent ? 'text-amber-300' : 'text-white'} truncate">${track.title}</p>
+                            <p class="text-[11px] text-slate-400 truncate">${track.artist}</p>
+                        </div>
+                    </div>
+
+                    <div class="hidden sm:flex items-center gap-4 mr-4">
+                        <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-white/5 text-slate-300 border border-white/5">${track.category}</span>
+                        <span class="text-xs font-mono text-slate-400 w-10 text-right">${formatTime(track.duration)}</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleTrackFavorite('${track.id}')" class="p-2 text-slate-400 hover:text-pink-500 transition">
+                            <i class="${track.favorite ? 'fa-solid fa-heart text-pink-500' : 'fa-regular fa-heart'} text-xs"></i>
+                        </button>
+                        <button onclick="loadAndPlayTrack(${realIdx})" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-amber-500/30 text-slate-200 flex items-center justify-center transition">
+                            <i class="fa-solid ${isCurrent && isPlaying ? 'fa-pause text-amber-300' : 'fa-play'} text-xs"></i>
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        /********************************************************************
+         * 9. FILTERING, FAVORITES & NAVIGATION
+         ********************************************************************/
+        function filterByCategory(category) {
+            activeCategory = category;
+            document.querySelectorAll('.cat-pill').forEach(btn => {
+                if (btn.dataset.cat === category) {
+                    btn.className = 'cat-pill shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-500 to-pink-600 text-white shadow';
+                } else {
+                    btn.className = 'cat-pill shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-dn-card text-slate-400 hover:text-white border border-dn-border transition';
+                }
+            });
+            document.getElementById('section-heading').textContent = category === 'All' ? 'All Indian Hits' : `${category}`;
+            renderTracks();
+        }
+
+        function switchNav(navItem) {
+            activeNav = navItem;
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = 'nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-all justify-between';
+            });
+            const activeBtn = document.getElementById(`nav-${navItem}`);
+            if (activeBtn) {
+                activeBtn.className = 'nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all bg-gradient-to-r from-amber-500/25 to-pink-500/15 text-white border border-amber-500/30 justify-between';
+            }
+
+            const hero = document.getElementById('hero-banner');
+            if (navItem === 'favorites') {
+                hero.classList.add('hidden');
+                document.getElementById('section-heading').textContent = 'Liked Indian Songs';
+            } else if (navItem === 'online') {
+                hero.classList.remove('hidden');
+                filterByCategory('Online Stream');
+                const hasOnline = tracks.some(t => t.category === 'Online Stream');
+                if (!hasOnline) {
+                    fetchArtistSongs('Bollywood Top Hits Arijit Singh', true);
+                }
+            } else {
+                hero.classList.remove('hidden');
+                filterByCategory('All');
+            }
+
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+            renderTracks();
+        }
+
+        function toggleTrackFavorite(trackId) {
+            const track = tracks.find(t => t.id === trackId);
+            if (!track) return;
+            track.favorite = !track.favorite;
+            showToast(track.favorite ? `Added "${track.title}" to Liked Songs` : `Removed from Liked Songs`, 'fa-heart');
+            updatePlayerUI();
+            renderTracks();
+        }
+
+        function toggleCurrentFavorite() {
+            const track = tracks[currentTrackIndex];
+            if (track) toggleTrackFavorite(track.id);
+        }
+
+        function updateFavoritesBadge() {
+            const count = tracks.filter(t => t.favorite).length;
+            document.getElementById('fav-count-badge').textContent = count;
+        }
+
+        /********************************************************************
+         * 10. EVENT LISTENERS & AUTO-STARTUP
+         ********************************************************************/
+        const searchInput = document.getElementById('search-input');
+        const clearSearchBtn = document.getElementById('clear-search-btn');
+
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim().toLowerCase();
+            clearSearchBtn.classList.toggle('hidden', !searchQuery);
+            renderTracks();
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && searchInput.value.trim()) {
+                searchOnlineITunes();
+            }
+        });
+
+        clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchQuery = '';
+            clearSearchBtn.classList.add('hidden');
+            renderTracks();
+        });
+
+        document.getElementById('seek-slider').addEventListener('input', (e) => {
+            const ratio = parseFloat(e.target.value) / 100;
+            seekToRatio(ratio);
+        });
+
+        document.getElementById('volume-slider').addEventListener('input', (e) => {
+            volume = parseFloat(e.target.value);
+            isMuted = volume === 0;
+            if (masterGain) {
+                masterGain.gain.value = volume;
+            }
+            updateVolumeIcon();
+        });
+
+        document.getElementById('open-sidebar-btn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('-translate-x-full');
+        });
+        document.getElementById('close-sidebar-btn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+        });
+        document.getElementById('toggle-right-panel-btn').addEventListener('click', () => {
+            document.getElementById('right-panel').classList.toggle('translate-x-full');
+        });
+        document.getElementById('close-right-panel-btn').addEventListener('click', () => {
+            document.getElementById('right-panel').classList.add('translate-x-full');
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault();
+                togglePlay();
+            }
+        });
+
+        let toastTimeout;
+        function showToast(message, icon = 'fa-music') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = message;
+            document.getElementById('toast-icon').className = `fa-solid ${icon} text-amber-400`;
+            toast.classList.remove('translate-x-full', 'opacity-0');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+            }, 2800);
+        }
+
+        window.onload = function () {
+            resizeCanvas();
+            updatePlayerUI();
+            renderTracks();
+            drawVisualizer();
+            // Pre-fetch top Indian hits in the background so real online previews are ready immediately
+            fetchArtistSongs('Arijit Singh Bollywood Hits', false);
+        };
+    </script>
+</body>
+</html>
